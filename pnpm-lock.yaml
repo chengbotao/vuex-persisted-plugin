@@ -14,6 +14,9 @@ devDependencies:
   '@babel/preset-typescript':
     specifier: ^7.23.3
     version: 7.23.3(@babel/core@7.23.7)
+  '@manzhixing/web-storage-adapter':
+    specifier: ^1.0.4
+    version: 1.0.4
   '@rollup/plugin-commonjs':
     specifier: ^25.0.7
     version: 25.0.7(rollup@4.9.5)
@@ -1565,6 +1568,10 @@ packages:
     dependencies:
       '@jridgewell/resolve-uri': 3.1.1
       '@jridgewell/sourcemap-codec': 1.4.15
+    dev: true
+
+  /@manzhixing/web-storage-adapter@1.0.4:
+    resolution: {integrity: sha512-g9Qi+pxrt4B0oCAIV1dEIVpeQDmbvweDY9yfp/1tetF7DnSfD8rBifR+Kyz16ZqAE9LNH01As8QerdcyTXA/rg==}
     dev: true
 
   /@one-ini/wasm@0.1.1:
