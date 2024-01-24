@@ -13,12 +13,14 @@ import {
 
 const DEFAULT_STORAGE = localStorage;
 const DEFAULT_STORAGE_KEY = "__VUEX_PERSIST_PLUGIN__";
+const RESET_MUTATION_TYPE = "__RESET_STATE__";
 interface Path {
 	paths: string[];
 	storage?: Storage;
 	storageKey?: string;
 	getState?: (storage: Storage, key: string) => Record<string, unknown>;
 	setState?: (storage: Storage, key: string, value: unknown) => void;
+	removeState?: (storage: Storage, key: string) => void;
 }
 interface Options {
 	paths: (string | Path)[];
@@ -26,7 +28,9 @@ interface Options {
 	storageKey?: string;
 	getState?: (storage: Storage, key: string) => Record<string, unknown>;
 	setState?: (storage: Storage, key: string, value: unknown) => void;
+	removeState?: (storage: Storage, key: string) => void;
 	mutationFilter?: (mutation: MutationPayload) => boolean;
+	resetMutationType?: string;
 }
 export function persistedPlugin<S>(options: Options) {
 	const {
@@ -38,13 +42,18 @@ export function persistedPlugin<S>(options: Options) {
 		setState = (storage, key, value) => {
 			storage.setItem(key, JSON.stringify(value));
 		},
+		removeState = (storage, key) => {
+			storage.removeItem(key);
+		},
 		mutationFilter = (mutation) => true,
+		resetMutationType = RESET_MUTATION_TYPE,
 	} = options;
 	let unifyStringPath: Required<Path> = {
 		storage,
 		storageKey,
 		getState,
 		setState,
+		removeState,
 		paths: [],
 	};
 	let unifyPaths: Required<Path>[] = [];
@@ -53,7 +62,11 @@ export function persistedPlugin<S>(options: Options) {
 			unifyStringPath.paths.push(path);
 		} else if (isPlainObject(path)) {
 			unifyPaths.push(
-				Object.assign({}, { storage, storageKey, getState, setState }, path)
+				Object.assign(
+					{},
+					{ storage, storageKey, getState, setState, removeState },
+					path
+				)
 			);
 		}
 	});
@@ -69,9 +82,47 @@ export function persistedPlugin<S>(options: Options) {
 		if (!isEmpty(saveState)) {
 			store.replaceState(deepMerge(store.state, saveState) as S);
 		}
+		store.registerModule(resetMutationType, {
+			mutations: {
+				[resetMutationType](state, playload) {
+					return;
+				},
+			},
+		});
 		store.subscribe((mutation, state) => {
 			let mutationState = deepClone(state);
-			
+			if (mutation.type === resetMutationType) {
+				if (!mutation.payload) {
+					unifyPaths.forEach((path) => {
+						const { storage, storageKey, removeState } = path;
+						removeState(storage, storageKey);
+					});
+					store.replaceState(deepMerge(state, initState) as S);
+				} else {
+					const mutationMergeState = deepMerge(
+						mutationState,
+						reducerState(initState as Record<string, unknown>, mutation.payload)
+					);
+					unifyPaths.forEach((path) => {
+						const { storage, storageKey, getState, setState, paths } = path;
+						let savedKey = getState(storage, storageKey);
+						setState(
+							storage,
+							storageKey,
+							deepMerge(
+								savedKey,
+								reducerState(
+									mutationMergeState as Record<string, unknown>,
+									paths
+								)
+							)
+						);
+					});
+					store.replaceState(deepMerge(state, mutationMergeState) as S);
+				}
+				return;
+			}
+
 			if (mutationFilter(mutation)) {
 				unifyPaths.forEach((path) => {
 					const { storage, storageKey, getState, setState, paths } = path;

@@ -150,7 +150,7 @@ describe("persistedPlugin", () => {
 			JSON.parse(localStorage.getItem("__PERSIST_PLUGIN_1__")!).userInfo.name
 		).toBe("botaocheng");
 	});
-	it("持久化参数配置：getState setState", async () => {
+	it("持久化参数配置：getState setState removeState", async () => {
 		const store = createStore({
 			state() {
 				return {
@@ -186,6 +186,9 @@ describe("persistedPlugin", () => {
 					setState(storage, key, value) {
 						storage.set(key, value);
 					},
+					removeState(storage, key) {
+						storage.remove(key);
+					},
 				}),
 			],
 		});
@@ -198,4 +201,98 @@ describe("persistedPlugin", () => {
 			"botaocheng"
 		);
 	});
+	it("持久化参数配置：__RESET_STATE__ 重置持久化状态", async () => {
+		const store = createStore({
+			state() {
+				return {
+					count: 0,
+					userInfo: {
+						name: "chengbotao",
+						email: "chengbotao5221@163.com",
+					},
+				};
+			},
+			mutations: {
+				increment(state: any) {
+					state.count += 1;
+				},
+				updateUserInfo(state: any) {
+					state.userInfo.name = "botaocheng";
+				},
+				updateUserInfo1(state: any) {
+					state.userInfo.email = "chengbotao5221@gmail.com";
+				},
+			},
+			plugins: [
+				persistedPlugin({
+					storage: localStore,
+					storageKey: "__PERSIST_PLUGIN_4__",
+					paths: [
+						"count",
+						{
+							paths: ["userInfo"],
+							storage: sessionStore,
+						},
+					],
+					removeState(storage, key) {
+						storage.remove(key);
+					},
+				}),
+			]
+		});
+		store.commit("increment");
+		store.commit("updateUserInfo");
+		store.commit("updateUserInfo1");
+		store.commit("__RESET_STATE__");
+		expect(store.state.count).toBe(0);
+		expect(store.state.userInfo.name).toBe("chengbotao");
+		expect(store.state.userInfo.email).toBe("chengbotao5221@163.com");
+	})
+	it("持久化参数配置：__RESET_STATE__ 重置指定持久化状态", async () => {
+		const store = createStore({
+			state() {
+				return {
+					count: 0,
+					userInfo: {
+						name: "chengbotao",
+						email: "chengbotao5221@163.com",
+					},
+				};
+			},
+			mutations: {
+				increment(state: any) {
+					state.count += 1;
+				},
+				updateUserInfo(state: any) {
+					state.userInfo.name = "botaocheng";
+				},
+				updateUserInfo1(state: any) {
+					state.userInfo.email = "chengbotao5221@gmail.com";
+				},
+			},
+			plugins: [
+				persistedPlugin({
+					storage: localStore,
+					storageKey: "__PERSIST_PLUGIN_4__",
+					paths: [
+						"count",
+						{
+							paths: ["userInfo"],
+							storage: sessionStore,
+						},
+					],
+					removeState(storage, key) {
+						storage.remove(key);
+					},
+				}),
+			]
+		});
+		store.commit("increment");
+		store.commit("updateUserInfo");
+		store.commit("updateUserInfo1");
+		store.commit("__RESET_STATE__", ["userInfo.name"]);
+		expect(store.state.count).toBe(1);
+		expect(store.state.userInfo.name).toBe("chengbotao");
+		expect(store.state.userInfo.email).toBe("chengbotao5221@gmail.com");
+	})
 });
