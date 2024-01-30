@@ -34,6 +34,7 @@ interface Options {
 }
 export function persistedPlugin<S>(options: Options) {
 	const {
+		paths = [],
 		storage = DEFAULT_STORAGE,
 		storageKey = DEFAULT_STORAGE_KEY,
 		getState = (storage, key) => {
@@ -57,7 +58,7 @@ export function persistedPlugin<S>(options: Options) {
 		paths: [],
 	};
 	let unifyPaths: Required<Path>[] = [];
-	options.paths.forEach((path) => {
+	paths.forEach((path) => {
 		if (typeof path === "string") {
 			unifyStringPath.paths.push(path);
 		} else if (isPlainObject(path)) {
