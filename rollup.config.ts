@@ -25,7 +25,7 @@ const config: RollupOptions = {
 		{
 			file: "dist/index.umd.js",
 			format: "umd",
-			name: "webStorageAdapter",
+			name: "vuexPersistedPlugin",
 			...outputConf,
 		},
 	],
