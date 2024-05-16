@@ -1,7 +1,7 @@
 {
   "name": "vuex-persisted-plugin",
   "version": "1.0.1",
-  "description": "",
+  "description": "将 Vuex 的状态持久化到本地存储（如LocalStorage或SessionStorage）,并在页面刷新后自动恢复这些状态，从而实现了状态的持久化。",
   "main": "dist/index.umd.js",
   "module": "dist/index.esm.js",
   "types": "types/index.d.ts",
