@@ -3,7 +3,7 @@
  * @Contact: https://github.com/chengbotao
  */
 import { createStore } from "vuex";
-import { persistedPlugin } from "../src/index";
+import { persistedPlugin } from "../src";
 import { localStore, sessionStore } from "@manzhixing/web-storage-adapter";
 
 const store = createStore({
@@ -32,7 +32,7 @@ describe("persistedPlugin", () => {
 			JSON.parse(localStorage.getItem("__VUEX_PERSIST_PLUGIN__")!).count
 		).toBe(1);
 	});
-	it("重新实例化 Store，验证持久化数据", async () => {
+	it("重新实例化 Store，验证持久化数据",  () => {
 		const store = createStore({
 			state() {
 				return {
@@ -55,7 +55,7 @@ describe("persistedPlugin", () => {
 			JSON.parse(localStorage.getItem("__VUEX_PERSIST_PLUGIN__")!).count
 		).toBe(1);
 	});
-	it("持久化参数配置：storage", async () => {
+	it("持久化参数配置：storage",  () => {
 		const store = createStore({
 			state() {
 				return {
@@ -80,7 +80,7 @@ describe("persistedPlugin", () => {
 			JSON.parse(sessionStorage.getItem("__VUEX_PERSIST_PLUGIN__")!).count
 		).toBe(1);
 	});
-	it("持久化参数配置：storageKey", async () => {
+	it("持久化参数配置：storageKey",  () => {
 		const store = createStore({
 			state() {
 				return {
@@ -106,7 +106,7 @@ describe("persistedPlugin", () => {
 			JSON.parse(sessionStorage.getItem("__PERSIST_PLUGIN__")!).count
 		).toBe(1);
 	});
-	it("持久化参数配置：对不同State保存在不同Storage", async () => {
+	it("持久化参数配置：对不同State保存在不同Storage",  () => {
 		const store = createStore({
 			state() {
 				return {
@@ -150,7 +150,7 @@ describe("persistedPlugin", () => {
 			JSON.parse(localStorage.getItem("__PERSIST_PLUGIN_1__")!).userInfo.name
 		).toBe("botaocheng");
 	});
-	it("持久化参数配置：getState setState removeState", async () => {
+	it("持久化参数配置：getState setState removeState", () => {
 		const store = createStore({
 			state() {
 				return {
@@ -201,7 +201,7 @@ describe("persistedPlugin", () => {
 			"botaocheng"
 		);
 	});
-	it("持久化参数配置：__RESET_STATE__ 重置持久化状态", async () => {
+	it("持久化参数配置：__RESET_STATE__ 重置持久化状态",  () => {
 		const store = createStore({
 			state() {
 				return {
@@ -248,7 +248,7 @@ describe("persistedPlugin", () => {
 		expect(store.state.userInfo.name).toBe("chengbotao");
 		expect(store.state.userInfo.email).toBe("chengbotao5221@163.com");
 	})
-	it("持久化参数配置：__RESET_STATE__ 重置指定持久化状态", async () => {
+	it("持久化参数配置：__RESET_STATE__ 重置指定持久化状态",  () => {
 		const store = createStore({
 			state() {
 				return {

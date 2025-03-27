@@ -9,19 +9,20 @@ export function isPlainObject(val: unknown): val is Record<string, unknown> {
 
 export function isEmpty(values: unknown[] | Record<string, unknown>): boolean {
 	if (Array.isArray(values)) {
-		// 数组为空
-		if (values.length > 0) return false;
+		return values.length === 0;
 	} else {
-		// 对象为空
 		for (const key in values) {
-			return !!key && false;
+			return false;
 		}
+		return true;
 	}
-	return true;
 }
 
-export function deepClone(target: any, map = new WeakMap()) {
-	if (target === null || typeof target !== "object") {
+export function deepClone<T>(
+	target: T,
+	map: WeakMap<any, boolean> = new WeakMap()
+): T {
+	if (target == null || typeof target !== "object") {
 		return target;
 	}
 
@@ -29,44 +30,49 @@ export function deepClone(target: any, map = new WeakMap()) {
 		return target;
 	}
 
-	const Ctor = target.constructor;
+	const Ctor = target.constructor as { new (...args: unknown[]): unknown };
 	const ctorName = Ctor.name;
+
 	if (/^(RegExp|Date|Number|String|Boolean|Error)$/i.test(ctorName)) {
-		return new Ctor(target);
+		return new Ctor(target) as T;
 	}
 
 	if (ctorName === "Symbol") {
-		return Object(Object.prototype.valueOf.call(target));
+		return Object(Object.prototype.valueOf.call(target)) as T;
 	}
 
+	// 处理 Map
 	if (ctorName === "Map") {
 		const cloneMap = new Map();
 		map.set(target, true);
-		target.forEach((value: unknown, key: unknown) => {
+		(target as unknown as Map<unknown, unknown>).forEach((value: unknown, key: unknown) => {
 			cloneMap.set(deepClone(key, map), deepClone(value, map));
 		});
-		return cloneMap;
+		return cloneMap as unknown as T;
 	}
 
+	// 处理 Set
 	if (ctorName === "Set") {
 		const cloneSet = new Set();
 		map.set(target, true);
-
-		target.forEach((value: unknown) => {
+		(target as unknown as Set<unknown>).forEach((value: unknown) => {
 			cloneSet.add(deepClone(value, map));
 		});
-		return cloneSet;
+		return cloneSet as unknown as T;
 	}
 
 	map.set(target, true);
 
-	const cloneResult: Record<string, any> = Array.isArray(target) ? [] : {};
+	// 根据目标类型初始化克隆结果
+	const cloneResult = Array.isArray(target) ? [] : {};
 
+	// 遍历并克隆所有自身属性
 	Object.getOwnPropertyNames(target).forEach((key: string) => {
-		cloneResult[key] = deepClone(target[key], map);
+		// @ts-ignore
+		cloneResult[key] = deepClone((target as Record<string, unknown>)[key], map);
 	});
 
-	return cloneResult;
+	return cloneResult as T;
 }
 
 export function deepMerge(...objects: any[]): Object {
